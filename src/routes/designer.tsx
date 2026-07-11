@@ -1,16 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ShirtArtwork } from '@/components/ShirtArtwork'
+import { DesignerSavePanel } from '@/components/DesignerSavePanel'
 import { BASE_PRICE, formatBones, getComplexity } from '@/lib/complexity'
 import type { PatternElement, PatternLayer } from '@/lib/types'
+import { getAccountState } from '@/server/marketplace.functions'
 
-export const Route = createFileRoute('/designer')({ component: Designer })
+export const Route = createFileRoute('/designer')({ loader: () => getAccountState(), component: Designer })
 
 const elements: PatternElement[] = ['houndstooth', 'paisley', 'diamond', 'chevron', 'plaid', 'grid', 'zigzag', 'stripe']
 const palette = ['#d8ff36', '#ef5b38', '#1b365d', '#e7a9bc', '#f4e7c4', '#264b3f', '#e6c86a', '#59291f']
 const starter: PatternLayer[] = [{ element: 'houndstooth', colors: ['#f4e7c4', '#17231f'], scale: .85, rotation: 0 }]
 
 function Designer() {
+  const account = Route.useLoaderData()
   const [layers, setLayers] = useState(starter)
   const [selected, setSelected] = useState(0)
   const active = layers[selected]
@@ -32,7 +35,7 @@ function Designer() {
         <div className="add-pattern"><span>Add a layer</span><div>{elements.filter((element) => !layers.some((layer) => layer.element === element)).slice(0, 4).map((element) => <button type="button" key={element} onClick={() => addLayer(element)}>+ {element}</button>)}</div></div>
         {layers.length > 1 && <button className="remove-layer" type="button" onClick={() => { setLayers((current) => current.filter((_, index) => index !== selected)); setSelected(0) }}>Remove selected layer</button>}
       </aside>
-      <section className="designer-price"><div><span>Complexity</span><strong>{complexity.layers} × {complexity.elements} × {complexity.colors} = {complexity.score}</strong></div><div><span>Minimum listing price</span><strong>{formatBones(complexity.floor)} Bones</strong><small>{complexity.score} × {BASE_PRICE}</small></div><button type="button">Save this shirt <span>→</span></button></section>
+      <section className="designer-price"><div><span>Complexity</span><strong>{complexity.layers} × {complexity.elements} × {complexity.colors} = {complexity.score}</strong></div><div><span>Minimum listing price</span><strong>{formatBones(complexity.floor)} Bones</strong><small>{complexity.score} × {BASE_PRICE}</small></div><DesignerSavePanel layers={layers} floor={complexity.floor} account={account}/></section>
     </main>
   )
 }

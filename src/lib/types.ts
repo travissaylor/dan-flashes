@@ -18,14 +18,33 @@ export type PatternLayer = {
 
 export type Shirt = {
   id: string
+  listingId: string | null
   name: string
   creator: string
   price: number
   favorites: number
+  isFavorited: boolean
+  isOwner: boolean
+  availability: 'available' | 'sold' | 'development'
   listed: string
   status?: 'listed' | 'sold'
   layers: PatternLayer[]
 }
+
+export type AccountState =
+  | { mode: 'development'; configured: false }
+  | { mode: 'guest'; configured: true }
+  | {
+      mode: 'authenticated'
+      configured: true
+      userId: string
+      email: string
+      username: string
+      initials: string
+      balance: number
+      emailVerified: boolean
+      dailyRewardClaimed: boolean
+    }
 
 export type MarketplaceQuery = {
   element?: PatternElement

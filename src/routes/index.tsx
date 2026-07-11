@@ -20,7 +20,7 @@ function Marketplace() {
   const [filter, setFilter] = useState<PatternElement | 'all'>('all')
   const [maxPrice, setMaxPrice] = useState(15000)
   const [showFilters, setShowFilters] = useState(false)
-  const visible = useMemo(() => shirts.filter((shirt) => shirt.price <= maxPrice && (filter === 'all' || shirt.layers.some((layer) => layer.element === filter))), [filter, maxPrice])
+  const visible = useMemo(() => shirts.filter((shirt) => shirt.price <= maxPrice && (filter === 'all' || shirt.layers.some((layer) => layer.element === filter))), [shirts, filter, maxPrice])
 
   return (
     <main>

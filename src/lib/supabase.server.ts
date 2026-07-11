@@ -47,16 +47,22 @@ export function createSupabaseAdminClient() {
   })
 }
 
-export async function getVerifiedUser() {
+export async function getCurrentUser() {
   const supabase = createSupabaseServerClient()
   const { data, error } = await supabase.auth.getUser()
   if (error) return null
   return data.user
 }
 
+export async function getVerifiedUser() {
+  const user = await getCurrentUser()
+  return user?.email_confirmed_at ? user : null
+}
+
 export async function requireVerifiedUser() {
-  const user = await getVerifiedUser()
+  const user = await getCurrentUser()
   if (!user) throw new RepositoryError('Sign in to continue.', 'UNAUTHENTICATED')
+  if (!user.email_confirmed_at) throw new RepositoryError('Email not confirmed.', 'EMAIL_NOT_VERIFIED')
   return user
 }
 

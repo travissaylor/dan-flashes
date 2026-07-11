@@ -1,42 +1,64 @@
 import { createServerFn } from '@tanstack/react-start'
+import { setResponseHeaders } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { getMarketplaceRepository } from '@/data/repository.server'
-import { patternDefinitionSchema } from '@/lib/pattern'
+import {
+  createListingInputSchema, createShirtInputSchema, dailyRewardInputSchema, favoriteInputSchema,
+  mapActionError, purchaseListingInputSchema, type ActionResult,
+} from '@/lib/action-contracts'
 
-const idempotencyKey = z.string().uuid()
+function markViewerDataPrivate() {
+  setResponseHeaders(new Headers({ 'Cache-Control': 'private, no-store', Vary: 'Cookie, Authorization' }))
+}
 
 export const getMarketplace = createServerFn({ method: 'GET' }).handler(async () => {
+  markViewerDataPrivate()
   return getMarketplaceRepository().getMarketplace()
+})
+
+export const getAccountState = createServerFn({ method: 'GET' }).handler(async () => {
+  markViewerDataPrivate()
+  return getMarketplaceRepository().getAccountState()
 })
 
 export const getListingDetail = createServerFn({ method: 'GET' })
   .validator(z.object({ shirtId: z.string().trim().min(1).max(100) }).strict())
-  .handler(async ({ data }) => getMarketplaceRepository().getListingDetail(data.shirtId))
+  .handler(async ({ data }) => {
+    markViewerDataPrivate()
+    return getMarketplaceRepository().getListingDetail(data.shirtId)
+  })
 
 export const createShirt = createServerFn({ method: 'POST' })
-  .validator(z.object({
-    name: z.string().trim().min(1).max(80),
-    pattern: patternDefinitionSchema,
-    idempotencyKey,
-  }).strict())
-  .handler(async ({ data }) => ({ shirtId: await getMarketplaceRepository().createShirt(data) }))
+  .validator(createShirtInputSchema)
+  .handler(async ({ data }): Promise<ActionResult<{ shirtId: string }>> => {
+    try { return { ok: true, data: { shirtId: await getMarketplaceRepository().createShirt(data) } } }
+    catch (error) { return { ok: false, error: mapActionError(error) } }
+  })
 
 export const createListing = createServerFn({ method: 'POST' })
-  .validator(z.object({
-    shirtId: z.string().uuid(),
-    price: z.number().int().positive().max(2_000_000_000),
-    idempotencyKey,
-  }).strict())
-  .handler(async ({ data }) => ({ listingId: await getMarketplaceRepository().createListing(data) }))
+  .validator(createListingInputSchema)
+  .handler(async ({ data }): Promise<ActionResult<{ listingId: string }>> => {
+    try { return { ok: true, data: { listingId: await getMarketplaceRepository().createListing(data) } } }
+    catch (error) { return { ok: false, error: mapActionError(error) } }
+  })
 
 export const purchaseListing = createServerFn({ method: 'POST' })
-  .validator(z.object({ listingId: z.string().uuid(), idempotencyKey }).strict())
-  .handler(async ({ data }) => getMarketplaceRepository().purchaseListing(data))
+  .validator(purchaseListingInputSchema)
+  .handler(async ({ data }) => {
+    try { return { ok: true as const, data: await getMarketplaceRepository().purchaseListing(data) } }
+    catch (error) { return { ok: false as const, error: mapActionError(error) } }
+  })
 
 export const setListingFavorite = createServerFn({ method: 'POST' })
-  .validator(z.object({ listingId: z.string().uuid(), favorite: z.boolean() }).strict())
-  .handler(async ({ data }) => getMarketplaceRepository().setFavorite(data))
+  .validator(favoriteInputSchema)
+  .handler(async ({ data }) => {
+    try { return { ok: true as const, data: await getMarketplaceRepository().setFavorite(data) } }
+    catch (error) { return { ok: false as const, error: mapActionError(error) } }
+  })
 
 export const claimDailyReward = createServerFn({ method: 'POST' })
-  .validator(z.object({ idempotencyKey }).strict())
-  .handler(async ({ data }) => getMarketplaceRepository().claimDailyReward(data.idempotencyKey))
+  .validator(dailyRewardInputSchema)
+  .handler(async ({ data }) => {
+    try { return { ok: true as const, data: await getMarketplaceRepository().claimDailyReward(data.idempotencyKey) } }
+    catch (error) { return { ok: false as const, error: mapActionError(error) } }
+  })

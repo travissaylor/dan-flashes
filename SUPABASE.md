@@ -20,8 +20,12 @@ mutations fail with a configuration error instead of pretending to succeed.
    ```
 
 4. In Authentication → URL Configuration, set the site URL for the deployed
-   app and allow `https://YOUR_HOST/auth/callback`. OAuth providers should send
-   their PKCE callback to that route.
+   app and add `https://YOUR_HOST/auth/callback` to the redirect allow list.
+   Keep email confirmation enabled: signup sends a PKCE link to that callback,
+   and the 2,000 Bones award is issued only after `email_confirmed_at` is set.
+   If the confirmation email template is customized, preserve Supabase's
+   confirmation URL/token variables. Password sign-in runs through a TanStack
+   Start server function that writes the SSR cookies.
 5. Start the app with `npm run dev`. Do not expose
    `SUPABASE_SERVICE_ROLE_KEY` through a `VITE_`/`PUBLIC_` environment variable.
 
@@ -37,6 +41,15 @@ npx supabase db reset
 Use the local API URL and publishable/anon key printed by `supabase status` in
 `.env.local`. `db reset` recreates the database and applies every file in
 `supabase/migrations` in order.
+
+Local confirmation mail is captured by Inbucket at the URL printed by
+`supabase status` (normally `http://127.0.0.1:54324`). Create an account in the
+app, open its message there, and follow the link back to `/auth/callback`.
+Both localhost callback variants are already allowed in `supabase/config.toml`.
+
+Auth return destinations use a relative `next` parameter. External,
+protocol-relative, and backslash-containing destinations are rejected.
+Sign-out uses local scope, so it closes only the current session.
 
 ## Economy contract
 

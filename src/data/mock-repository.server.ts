@@ -10,6 +10,9 @@ const unavailable = () => {
 }
 
 export const mockMarketplaceRepository: MarketplaceRepository = {
+  async getAccountState() {
+    return { mode: 'development' as const, configured: false as const }
+  },
   async getMarketplace() {
     return structuredClone(shirts)
   },

@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { exchangeAuthCode } from '@/lib/supabase.server'
+import { safeReturnPath } from '@/lib/action-contracts'
 
 export const Route = createFileRoute('/auth/callback')({
   server: {
@@ -7,8 +8,7 @@ export const Route = createFileRoute('/auth/callback')({
       GET: async ({ request }) => {
         const url = new URL(request.url)
         const code = url.searchParams.get('code')
-        const redirectTo = url.searchParams.get('next')
-        const safeRedirect = redirectTo?.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/'
+        const safeRedirect = safeReturnPath(url.searchParams.get('next'))
 
         if (!code) return new Response('The sign-in link is incomplete.', { status: 400 })
         try {

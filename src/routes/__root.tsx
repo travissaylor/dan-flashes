@@ -1,8 +1,10 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { SiteHeader } from '@/components/SiteHeader'
+import { getAccountState } from '@/server/marketplace.functions'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
+  loader: () => getAccountState(),
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -18,7 +20,8 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
-  return <><SiteHeader /><Outlet /><footer><span>Dan Flashes</span><p>The patterns are complicated because they have to be.</p><small>© 2026 Shops at the Creek</small></footer></>
+  const account = Route.useLoaderData()
+  return <><SiteHeader account={account} /><Outlet /><footer><span>Dan Flashes</span><p>The patterns are complicated because they have to be.</p><small>© 2026 Shops at the Creek</small></footer></>
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {

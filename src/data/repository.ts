@@ -1,5 +1,5 @@
 import type { PatternDefinition } from '@/lib/pattern'
-import type { PurchaseReceipt, Shirt } from '@/lib/types'
+import type { AccountState, PurchaseReceipt, Shirt } from '@/lib/types'
 
 export type DailyRewardReceipt = {
   rewardDate: string
@@ -9,6 +9,7 @@ export type DailyRewardReceipt = {
 }
 
 export interface MarketplaceRepository {
+  getAccountState(): Promise<AccountState>
   getMarketplace(): Promise<Shirt[]>
   getListingDetail(shirtId: string): Promise<Shirt | null>
   createShirt(input: { name: string; pattern: PatternDefinition; idempotencyKey: string }): Promise<string>
