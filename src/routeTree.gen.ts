@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DesignerRouteImport } from './routes/designer'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShirtsShirtIdRouteImport } from './routes/shirts.$shirtId'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 
 const DesignerRoute = DesignerRouteImport.update({
   id: '/designer',
@@ -28,34 +29,43 @@ const ShirtsShirtIdRoute = ShirtsShirtIdRouteImport.update({
   path: '/shirts/$shirtId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/designer': typeof DesignerRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/designer': typeof DesignerRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/designer': typeof DesignerRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/designer' | '/shirts/$shirtId'
+  fullPaths: '/' | '/designer' | '/auth/callback' | '/shirts/$shirtId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/designer' | '/shirts/$shirtId'
-  id: '__root__' | '/' | '/designer' | '/shirts/$shirtId'
+  to: '/' | '/designer' | '/auth/callback' | '/shirts/$shirtId'
+  id: '__root__' | '/' | '/designer' | '/auth/callback' | '/shirts/$shirtId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DesignerRoute: typeof DesignerRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   ShirtsShirtIdRoute: typeof ShirtsShirtIdRoute
 }
 
@@ -82,12 +92,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShirtsShirtIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DesignerRoute: DesignerRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   ShirtsShirtIdRoute: ShirtsShirtIdRoute,
 }
 export const routeTree = rootRouteImport

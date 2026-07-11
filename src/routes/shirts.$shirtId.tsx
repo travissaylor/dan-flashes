@@ -1,11 +1,11 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { ShirtArtwork } from '@/components/ShirtArtwork'
-import { shirts } from '@/data/shirts'
 import { BASE_PRICE, formatBones, getComplexity } from '@/lib/complexity'
+import { getListingDetail } from '@/server/marketplace.functions'
 
 export const Route = createFileRoute('/shirts/$shirtId')({
-  loader: ({ params }) => {
-    const shirt = shirts.find((item) => item.id === params.shirtId)
+  loader: async ({ params }) => {
+    const shirt = await getListingDetail({ data: { shirtId: params.shirtId } })
     if (!shirt) throw notFound()
     return shirt
   },

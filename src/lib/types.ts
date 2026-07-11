@@ -26,3 +26,16 @@ export type Shirt = {
   status?: 'listed' | 'sold'
   layers: PatternLayer[]
 }
+
+export type MarketplaceQuery = {
+  element?: PatternElement
+  maxPrice?: number
+}
+
+export type PurchaseReceipt = {
+  listingId: string
+  shirtId: string
+  buyerBalance: number
+  sellerProceeds: number
+  houseCut: number
+}

@@ -6,20 +6,25 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@supabase/ssr": "0.12.0",
+    "@supabase/supabase-js": "2.110.2",
     "@tanstack/react-router": "1.170.17",
     "@tanstack/react-start": "1.168.27",
     "@vitejs/plugin-react": "latest",
-    "vite": "8.1.4",
     "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react-dom": "19.2.7",
+    "vite": "8.1.4",
+    "zod": "4.1.12"
   },
   "devDependencies": {
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "vitest": "3.2.7"
   }
 }

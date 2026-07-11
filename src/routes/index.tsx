@@ -1,10 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { ShirtCard } from '@/components/ShirtCard'
-import { shirts } from '@/data/shirts'
 import type { PatternElement } from '@/lib/types'
+import { getMarketplace } from '@/server/marketplace.functions'
 
-export const Route = createFileRoute('/')({ component: Marketplace })
+export const Route = createFileRoute('/')({
+  loader: () => getMarketplace(),
+  component: Marketplace,
+})
 
 const filters: Array<{ label: string; value: PatternElement | 'all' }> = [
   { label: 'All patterns', value: 'all' }, { label: 'Paisley', value: 'paisley' },
@@ -13,6 +16,7 @@ const filters: Array<{ label: string; value: PatternElement | 'all' }> = [
 ]
 
 function Marketplace() {
+  const shirts = Route.useLoaderData()
   const [filter, setFilter] = useState<PatternElement | 'all'>('all')
   const [maxPrice, setMaxPrice] = useState(15000)
   const [showFilters, setShowFilters] = useState(false)
