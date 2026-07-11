@@ -1,0 +1,80 @@
+import type { Shirt } from '@/lib/types'
+
+export const shirts: Shirt[] = [
+  {
+    id: 'dangerous-nights',
+    name: 'Dangerous Nights',
+    creator: 'doug_from_work',
+    price: 9400,
+    favorites: 182,
+    listed: '12 min ago',
+    layers: [
+      { element: 'houndstooth', colors: ['#f4e7c4', '#17231f'], scale: 0.82, rotation: 8 },
+      { element: 'diamond', colors: ['#d8ff36', '#d24728'], scale: 1.25, rotation: -12, opacity: 0.84 },
+      { element: 'stripe', colors: ['#1b365d', '#e7a9bc'], scale: 0.7, rotation: 42, opacity: 0.52 },
+    ],
+  },
+  {
+    id: 'the-business-lunch',
+    name: 'The Business Lunch',
+    creator: 'slicked_back',
+    price: 6200,
+    favorites: 96,
+    listed: '38 min ago',
+    layers: [
+      { element: 'plaid', colors: ['#e6c86a', '#59291f'], scale: 1.1, rotation: 0 },
+      { element: 'paisley', colors: ['#264b3f', '#f0efe2'], scale: 0.9, rotation: 24, opacity: 0.72 },
+    ],
+  },
+  {
+    id: 'complication-no-7',
+    name: 'Complication No. 7',
+    creator: 'pattern_guy',
+    price: 12800,
+    favorites: 311,
+    listed: '1 hr ago',
+    layers: [
+      { element: 'chevron', colors: ['#ef5b38', '#1c2a55'], scale: 0.65, rotation: 0 },
+      { element: 'grid', colors: ['#f6df9f', '#427c71'], scale: 0.72, rotation: 18, opacity: 0.68 },
+      { element: 'zigzag', colors: ['#291a1d', '#d8ff36'], scale: 0.55, rotation: -20, opacity: 0.72 },
+      { element: 'diamond', colors: ['#ef8d9c', '#6f271c'], scale: 1.4, rotation: 40, opacity: 0.55 },
+    ],
+  },
+  {
+    id: 'quiet-power',
+    name: 'Quiet Power',
+    creator: 'calico_cut',
+    price: 3600,
+    favorites: 44,
+    listed: '2 hrs ago',
+    layers: [
+      { element: 'grid', colors: ['#d7ded0', '#243e3a'], scale: 1.3, rotation: 2 },
+      { element: 'stripe', colors: ['#be5039', '#f4e4b5'], scale: 1.1, rotation: -33, opacity: 0.62 },
+    ],
+  },
+  {
+    id: 'paid-in-bones',
+    name: 'Paid in Bones',
+    creator: 'big_wet',
+    price: 7900,
+    favorites: 127,
+    listed: 'Yesterday',
+    layers: [
+      { element: 'paisley', colors: ['#171c35', '#e35e3f'], scale: 0.7, rotation: 0 },
+      { element: 'houndstooth', colors: ['#e7c85e', '#387266'], scale: 0.64, rotation: 31, opacity: 0.7 },
+      { element: 'diamond', colors: ['#efb8c7', '#17231f'], scale: 1.25, rotation: 0, opacity: 0.5 },
+    ],
+  },
+  {
+    id: 'friday-4-45',
+    name: 'Friday, 4:45',
+    creator: 'stanzo_fedora',
+    price: 5100,
+    favorites: 73,
+    listed: 'Yesterday',
+    layers: [
+      { element: 'zigzag', colors: ['#f0dfbd', '#5b302a'], scale: 0.8, rotation: 10 },
+      { element: 'plaid', colors: ['#b9d63c', '#25444c'], scale: 0.92, rotation: -7, opacity: 0.7 },
+    ],
+  },
+]
