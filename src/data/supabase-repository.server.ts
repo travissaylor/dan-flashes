@@ -2,19 +2,60 @@ import '@tanstack/react-start/server-only'
 import { z } from 'zod'
 import { patternDefinitionSchema } from '@/lib/pattern'
 import { createSupabaseServerClient, getCurrentUser, requireVerifiedUser } from '@/lib/supabase.server'
+import type { LeaderboardEntry, Shirt } from '@/lib/types'
 import { RepositoryError, type MarketplaceRepository } from './repository'
 
-const listingRowSchema = z.object({
+const countSchema = z.coerce.number().int().nonnegative()
+const bonesSchema = z.coerce.number().int().safe()
+
+const collectionRowSchema = z.object({
+  shirt_id: z.string().uuid(),
+  name: z.string(),
+  pattern: patternDefinitionSchema,
+  layer_count: countSchema,
+  element_count: countSchema,
+  color_count: countSchema,
+  complexity_score: countSchema,
+  price_floor: bonesSchema,
+  created_at: z.string(),
+  creator_id: z.string().uuid(),
+  creator_username: z.string(),
+  owner_id: z.string().uuid(),
+  owner_username: z.string(),
+  active_listing_id: z.string().uuid().nullable(),
+  active_price: bonesSchema.nullable(),
+  active_listed_at: z.string().nullable(),
+  last_listing_id: z.string().uuid().nullable(),
+  last_listing_status: z.enum(['active', 'sold', 'cancelled']).nullable(),
+  favorite_count: countSchema,
+})
+
+const leaderboardRowSchema = z.object({
   listing_id: z.string().uuid(),
   shirt_id: z.string().uuid(),
   name: z.string(),
-  creator_username: z.string(),
-  price: z.coerce.number().int().safe(),
-  status: z.enum(['active', 'sold', 'cancelled']),
-  created_at: z.string(),
   pattern: patternDefinitionSchema,
-  favorite_count: z.coerce.number().int().nonnegative(),
+  layer_count: countSchema,
+  element_count: countSchema,
+  color_count: countSchema,
+  complexity_score: countSchema,
+  price: bonesSchema,
+  purchased_at: z.string(),
+  seller_username: z.string(),
+  buyer_username: z.string(),
 })
+
+const profileSummaryRowSchema = z.object({
+  user_id: z.string().uuid(),
+  username: z.string(),
+  joined_at: z.string(),
+  shirts_owned: countSchema,
+  shirts_created: countSchema,
+  sales_count: countSchema,
+})
+
+type CollectionRow = z.infer<typeof collectionRowSchema>
+type ViewerContext = { favoriteIds: Set<string>; ownedShirtIds: Set<string> }
 
 function listedLabel(value: string) {
   const elapsedMinutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60_000))
@@ -24,21 +65,55 @@ function listedLabel(value: string) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(value))
 }
 
-function toShirt(input: unknown, viewer?: { favoriteIds: Set<string>; ownedShirtIds: Set<string> }) {
-  const row = listingRowSchema.parse(input)
+function soldLabel(value: string) {
+  return listedLabel(value)
+}
+
+function joinedLabel(value: string) {
+  return `Since ${new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(new Date(value))}`
+}
+
+function favoriteAnchor(row: CollectionRow) {
+  return row.active_listing_id ?? row.last_listing_id
+}
+
+function toShirt(input: unknown, viewer?: ViewerContext): Shirt {
+  const row = collectionRowSchema.parse(input)
+  const anchor = favoriteAnchor(row)
   return {
     id: row.shirt_id,
-    listingId: row.listing_id,
+    listingId: row.active_listing_id,
     name: row.name,
     creator: row.creator_username,
-    price: row.price,
+    owner: row.owner_username,
+    price: row.active_price ?? row.price_floor,
+    priceFloor: row.price_floor,
+    complexityScore: row.complexity_score,
     favorites: row.favorite_count,
-    isFavorited: viewer?.favoriteIds.has(row.listing_id) ?? false,
+    isFavorited: anchor ? (viewer?.favoriteIds.has(anchor) ?? false) : false,
     isOwner: viewer?.ownedShirtIds.has(row.shirt_id) ?? false,
-    availability: row.status === 'active' ? ('available' as const) : ('sold' as const),
-    listed: listedLabel(row.created_at),
-    status: row.status === 'sold' ? ('sold' as const) : ('listed' as const),
+    availability: row.active_listing_id ? 'available' : 'unlisted',
+    listed: listedLabel(row.active_listed_at ?? row.created_at),
     layers: row.pattern.layers,
+  }
+}
+
+function toLeaderboardEntry(input: unknown, index: number): LeaderboardEntry {
+  const row = leaderboardRowSchema.parse(input)
+  return {
+    rank: index + 1,
+    listingId: row.listing_id,
+    shirtId: row.shirt_id,
+    name: row.name,
+    layers: row.pattern.layers,
+    price: row.price,
+    soldAt: soldLabel(row.purchased_at),
+    seller: row.seller_username,
+    buyer: row.buyer_username,
+    complexityScore: row.complexity_score,
+    layerCount: row.layer_count,
+    elementCount: row.element_count,
+    colorCount: row.color_count,
   }
 }
 
@@ -60,6 +135,11 @@ async function getViewerContext(listingIds: string[], shirtIds: string[]) {
     favoriteIds: new Set(z.array(z.object({ listing_id: z.string().uuid() })).parse(favoritesResult.data).map((row) => row.listing_id)),
     ownedShirtIds: new Set(z.array(z.object({ id: z.string().uuid() })).parse(ownedResult.data).map((row) => row.id)),
   }
+}
+
+async function getCollectionViewerContext(rows: CollectionRow[]) {
+  const listingIds = rows.map(favoriteAnchor).filter((value): value is string => Boolean(value))
+  return getViewerContext(listingIds, rows.map((row) => row.shirt_id))
 }
 
 function fail(error: { message: string; code?: string } | null, fallback: string): never {
@@ -92,31 +172,65 @@ export const supabaseMarketplaceRepository: MarketplaceRepository = {
   async getMarketplace() {
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
-      .from('marketplace_listings')
+      .from('shirt_collection')
       .select('*')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
+      .not('active_listing_id', 'is', null)
+      .order('active_listed_at', { ascending: false })
       .limit(100)
     if (error) fail(error, 'The marketplace could not be loaded.')
-    const rows = z.array(listingRowSchema).parse(data)
-    const viewer = await getViewerContext(rows.map((row) => row.listing_id), rows.map((row) => row.shirt_id))
+    const rows = z.array(collectionRowSchema).parse(data)
+    const viewer = await getCollectionViewerContext(rows)
     return rows.map((row) => toShirt(row, viewer))
   },
 
   async getListingDetail(shirtId) {
+    if (!z.string().uuid().safeParse(shirtId).success) return null
+    const supabase = createSupabaseServerClient()
+    const { data, error } = await supabase.from('shirt_collection').select('*').eq('shirt_id', shirtId).maybeSingle()
+    if (error) fail(error, 'The shirt could not be loaded.')
+    if (!data) return null
+    const row = collectionRowSchema.parse(data)
+    const viewer = await getCollectionViewerContext([row])
+    return toShirt(row, viewer)
+  },
+
+  async getProfile(username) {
+    const supabase = createSupabaseServerClient()
+    const summaryResult = await supabase.from('profile_summaries').select('*').ilike('username', username).maybeSingle()
+    if (summaryResult.error) fail(summaryResult.error, 'The profile could not be loaded.')
+    if (!summaryResult.data) return null
+    const summary = profileSummaryRowSchema.parse(summaryResult.data)
+    const [ownedResult, createdResult] = await Promise.all([
+      supabase.from('shirt_collection').select('*').eq('owner_id', summary.user_id).order('created_at', { ascending: false }).limit(60),
+      supabase.from('shirt_collection').select('*').eq('creator_id', summary.user_id).order('created_at', { ascending: false }).limit(60),
+    ])
+    if (ownedResult.error) fail(ownedResult.error, 'The collection could not be loaded.')
+    if (createdResult.error) fail(createdResult.error, 'The design history could not be loaded.')
+    const ownedRows = z.array(collectionRowSchema).parse(ownedResult.data)
+    const createdRows = z.array(collectionRowSchema).parse(createdResult.data)
+    const viewer = await getCollectionViewerContext([...ownedRows, ...createdRows])
+    return {
+      username: summary.username,
+      joinedAt: joinedLabel(summary.joined_at),
+      shirtsOwned: summary.shirts_owned,
+      shirtsCreated: summary.shirts_created,
+      salesCount: summary.sales_count,
+      owned: ownedRows.map((row) => toShirt(row, viewer)),
+      created: createdRows.map((row) => toShirt(row, viewer)),
+    }
+  },
+
+  async getLeaderboard(limit) {
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
-      .from('marketplace_listings')
+      .from('leaderboard_sales')
       .select('*')
-      .eq('shirt_id', shirtId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    if (error) fail(error, 'The listing could not be loaded.')
-    if (!data) return null
-    const row = listingRowSchema.parse(data)
-    const viewer = await getViewerContext([row.listing_id], [row.shirt_id])
-    return toShirt(row, viewer)
+      .order('complexity_score', { ascending: false })
+      .order('price', { ascending: false })
+      .order('purchased_at', { ascending: false })
+      .limit(limit)
+    if (error) fail(error, 'The leaderboard could not be loaded.')
+    return z.array(leaderboardRowSchema).parse(data).map(toLeaderboardEntry)
   },
 
   async createShirt(input) {
@@ -156,6 +270,14 @@ export const supabaseMarketplaceRepository: MarketplaceRepository = {
       seller_proceeds: z.coerce.number().int().safe(), house_cut: z.coerce.number().int().safe(),
     })).length(1).parse(data)[0]
     return { listingId: row.listing_id, shirtId: row.shirt_id, buyerBalance: row.buyer_balance, sellerProceeds: row.seller_proceeds, houseCut: row.house_cut }
+  },
+
+  async cancelListing(input) {
+    await requireVerifiedUser()
+    const supabase = createSupabaseServerClient()
+    const { data, error } = await supabase.rpc('cancel_listing', { p_listing_id: input.listingId })
+    if (error || typeof data !== 'string') fail(error, 'The listing could not be withdrawn.')
+    return { listingId: data }
   },
 
   async setFavorite(input) {

@@ -15,14 +15,42 @@ export type Shirt = {
   listingId: string | null
   name: string
   creator: string
+  owner: string
   price: number
+  priceFloor: number
+  complexityScore: number
   favorites: number
   isFavorited: boolean
   isOwner: boolean
-  availability: 'available' | 'sold' | 'development'
+  availability: 'available' | 'sold' | 'unlisted' | 'development'
   listed: string
-  status?: 'listed' | 'sold'
   layers: PatternLayer[]
+}
+
+export type LeaderboardEntry = {
+  rank: number
+  listingId: string
+  shirtId: string
+  name: string
+  layers: PatternLayer[]
+  price: number
+  soldAt: string
+  seller: string
+  buyer: string
+  complexityScore: number
+  layerCount: number
+  elementCount: number
+  colorCount: number
+}
+
+export type Profile = {
+  username: string
+  joinedAt: string
+  shirtsOwned: number
+  shirtsCreated: number
+  salesCount: number
+  owned: Shirt[]
+  created: Shirt[]
 }
 
 export type AccountState =
