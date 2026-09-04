@@ -25,7 +25,7 @@ function ProfilePage() {
       <header className="profile-header">
         <div>
           <p className="eyebrow">Registered pattern authority</p>
-          <h1>@{profile.username}</h1>
+          <h1 style={{ '--heading-chars': profile.username.length + 1 } as React.CSSProperties}>@{profile.username}</h1>
           <p className="profile-joined">{profile.joinedAt}</p>
         </div>
         {isOwner && <Link className="profile-design-link" to="/designer">Design another <span aria-hidden="true">↗</span></Link>}

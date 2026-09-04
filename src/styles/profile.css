@@ -1,7 +1,7 @@
 .profile-page { padding-bottom:clamp(80px,10vw,150px); }
 .profile-header { min-height:370px; display:flex; align-items:end; justify-content:space-between; gap:40px; padding:clamp(70px,9vw,130px) clamp(18px,5vw,80px) 58px; border-bottom:1px solid var(--ink); }
 .profile-header .eyebrow { margin-bottom:18px; }
-.profile-header h1 { margin:0; font:400 clamp(68px,10vw,150px)/.78 'DM Serif Display',serif; letter-spacing:-.06em; overflow-wrap:anywhere; }
+.profile-header h1 { margin:0; min-width:0; font:400 max(24px,min(clamp(68px,10vw,150px),calc((100vw - 2 * clamp(18px,5vw,80px)) / (var(--heading-chars,12) * .55))))/.78 'DM Serif Display',serif; letter-spacing:-.06em; overflow-wrap:anywhere; }
 .profile-joined { margin:24px 0 0; color:var(--muted); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; }
 .profile-design-link { flex:none; display:flex; justify-content:space-between; gap:60px; min-width:220px; padding:15px 0; border-top:1px solid var(--ink); border-bottom:1px solid var(--ink); font-size:11px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
 .profile-stats { display:grid; grid-template-columns:repeat(3,1fr); margin:0; border-bottom:1px solid var(--ink); }
@@ -25,7 +25,7 @@
 }
 @media (max-width:600px) {
   .profile-header { min-height:340px; display:block; padding-top:75px; }
-  .profile-header h1 { font-size:17vw; }
+  .profile-header h1 { font-size:max(24px,min(clamp(32px,15vw,90px),calc((100vw - 2 * clamp(18px,5vw,80px)) / (var(--heading-chars,12) * .55)))); }
   .profile-design-link { margin-top:45px; }
   .profile-stats,.profile-stats:has(.profile-balance) { grid-template-columns:1fr 1fr; }
   .profile-stats > div { min-height:125px; }
