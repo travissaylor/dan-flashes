@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShirtsShirtIdRouteImport } from './routes/shirts.$shirtId'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as ShirtsShirtIdImageDotpngRouteImport } from './routes/shirts.$shirtId_.image[.]png'
 
 const DesignerRoute = DesignerRouteImport.update({
   id: '/designer',
@@ -40,6 +41,12 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => AuthRoute,
 } as any)
+const ShirtsShirtIdImageDotpngRoute =
+  ShirtsShirtIdImageDotpngRouteImport.update({
+    id: '/shirts/$shirtId_/image.png',
+    path: '/shirts/$shirtId/image.png',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +54,7 @@ export interface FileRoutesByFullPath {
   '/designer': typeof DesignerRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
+  '/shirts/$shirtId/image.png': typeof ShirtsShirtIdImageDotpngRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +62,7 @@ export interface FileRoutesByTo {
   '/designer': typeof DesignerRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
+  '/shirts/$shirtId/image.png': typeof ShirtsShirtIdImageDotpngRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,12 +71,25 @@ export interface FileRoutesById {
   '/designer': typeof DesignerRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
+  '/shirts/$shirtId_/image.png': typeof ShirtsShirtIdImageDotpngRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/designer' | '/auth/callback' | '/shirts/$shirtId'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/designer'
+    | '/auth/callback'
+    | '/shirts/$shirtId'
+    | '/shirts/$shirtId/image.png'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/designer' | '/auth/callback' | '/shirts/$shirtId'
+  to:
+    | '/'
+    | '/auth'
+    | '/designer'
+    | '/auth/callback'
+    | '/shirts/$shirtId'
+    | '/shirts/$shirtId/image.png'
   id:
     | '__root__'
     | '/'
@@ -75,6 +97,7 @@ export interface FileRouteTypes {
     | '/designer'
     | '/auth/callback'
     | '/shirts/$shirtId'
+    | '/shirts/$shirtId_/image.png'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -82,6 +105,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   DesignerRoute: typeof DesignerRoute
   ShirtsShirtIdRoute: typeof ShirtsShirtIdRoute
+  ShirtsShirtIdImageDotpngRoute: typeof ShirtsShirtIdImageDotpngRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -121,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/shirts/$shirtId_/image.png': {
+      id: '/shirts/$shirtId_/image.png'
+      path: '/shirts/$shirtId/image.png'
+      fullPath: '/shirts/$shirtId/image.png'
+      preLoaderRoute: typeof ShirtsShirtIdImageDotpngRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -139,6 +170,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   DesignerRoute: DesignerRoute,
   ShirtsShirtIdRoute: ShirtsShirtIdRoute,
+  ShirtsShirtIdImageDotpngRoute: ShirtsShirtIdImageDotpngRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
