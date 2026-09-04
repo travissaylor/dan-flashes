@@ -1,16 +1,8 @@
 import { z } from 'zod'
 import { getComplexity } from './complexity'
+import { patternElements } from './pattern-elements'
 
-export const patternElements = [
-  'houndstooth',
-  'paisley',
-  'diamond',
-  'chevron',
-  'plaid',
-  'grid',
-  'zigzag',
-  'stripe',
-] as const
+export { patternElements } from './pattern-elements'
 
 const hexColorSchema = z
   .string()

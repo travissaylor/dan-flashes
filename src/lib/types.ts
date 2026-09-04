@@ -1,12 +1,6 @@
-export type PatternElement =
-  | 'houndstooth'
-  | 'paisley'
-  | 'diamond'
-  | 'chevron'
-  | 'plaid'
-  | 'grid'
-  | 'zigzag'
-  | 'stripe'
+import type { PatternElement } from './pattern-elements'
+
+export type { PatternElement }
 
 export type PatternLayer = {
   element: PatternElement
