@@ -1,7 +1,7 @@
 import { Link, useRouter } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import type { AccountState, Shirt } from '@/lib/types'
-import { purchaseListing, setListingFavorite } from '@/server/marketplace.functions'
+import { cancelListing, purchaseListing, setListingFavorite } from '@/server/marketplace.functions'
 
 export function ListingActions({ shirt, account }: { shirt: Shirt; account: AccountState }) {
   const router = useRouter()
@@ -10,11 +10,14 @@ export function ListingActions({ shirt, account }: { shirt: Shirt; account: Acco
   const [favoriteCount, setFavoriteCount] = useState(shirt.favorites)
   const [purchasePending, setPurchasePending] = useState(false)
   const [favoritePending, setFavoritePending] = useState(false)
+  const [cancelPending, setCancelPending] = useState(false)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
   const purchaseKey = useRef<string | null>(null)
 
-  const transactional = account.mode === 'authenticated' && shirt.listingId !== null
+  const authenticated = account.mode === 'authenticated'
+  const transactional = authenticated && shirt.listingId !== null
+  const isSeller = authenticated && shirt.isOwner && shirt.availability === 'available'
 
   async function purchase() {
     if (!transactional || !available || shirt.isOwner || purchasePending) return
@@ -59,7 +62,35 @@ export function ListingActions({ shirt, account }: { shirt: Shirt; account: Acco
     }
   }
 
-  if (account.mode !== 'authenticated') {
+  async function withdraw() {
+    if (!isSeller || !shirt.listingId || cancelPending) return
+    setCancelPending(true)
+    setError('')
+    setStatus('')
+    try {
+      const result = await cancelListing({ data: { listingId: shirt.listingId } })
+      if (!result.ok) return setError(result.error.message)
+      setStatus('Withdrawn from the floor.')
+      await router.invalidate()
+    } catch {
+      setError('The withdrawal did not settle. Try again.')
+    } finally {
+      setCancelPending(false)
+    }
+  }
+
+  const favoriteRow = transactional ? (
+    <div className="favorite-row"><button type="button" className={favorited ? 'favorite-button is-active' : 'favorite-button'} onClick={toggleFavorite} disabled={favoritePending} aria-pressed={favorited}>{favoritePending ? 'Recording…' : favorited ? 'Admired' : 'Mark as admired'} <span>{favoriteCount}</span></button></div>
+  ) : null
+
+  if (!authenticated) {
+    if (shirt.availability !== 'available') {
+      return (
+        <div className="listing-actions">
+          <button className="buy-button" type="button" disabled>{shirt.availability === 'unlisted' ? 'In a private collection' : 'No longer available'} <span>—</span></button>
+        </div>
+      )
+    }
     return (
       <div className="listing-actions">
         {account.mode === 'guest'
@@ -70,10 +101,38 @@ export function ListingActions({ shirt, account }: { shirt: Shirt; account: Acco
     )
   }
 
+  if (!shirt.isOwner && shirt.availability === 'unlisted') {
+    return (
+      <div className="listing-actions">
+        <button className="buy-button" type="button" disabled>In a private collection <span>—</span></button>
+        <p className="purchase-note">This shirt is not currently on the floor.</p>
+      </div>
+    )
+  }
+
+  if (isSeller) {
+    return (
+      <div className="listing-actions">
+        {favoriteRow}
+        <button className="buy-button" type="button" onClick={withdraw} disabled={cancelPending}>{cancelPending ? 'Withdrawing…' : 'Withdraw from the floor'} <span>—</span></button>
+        <p className="purchase-note">The listing fee is not returned.</p>
+        <div className={`mutation-status ${error ? 'is-error' : ''}`} role="status" aria-live="polite">{error || status}</div>
+      </div>
+    )
+  }
+
+  if (shirt.isOwner && shirt.availability === 'unlisted') {
+    return (
+      <div className="listing-actions">
+        <p className="purchase-note">This shirt is off the floor. Relist it below.</p>
+      </div>
+    )
+  }
+
   const purchaseLabel = purchasePending ? 'Transferring ownership…' : !available ? 'No longer available' : shirt.isOwner ? 'Already in your collection' : 'Acquire this shirt'
   return (
     <div className="listing-actions">
-      <div className="favorite-row"><button type="button" className={favorited ? 'favorite-button is-active' : 'favorite-button'} onClick={toggleFavorite} disabled={favoritePending} aria-pressed={favorited}>{favoritePending ? 'Recording…' : favorited ? 'Admired' : 'Mark as admired'} <span>{favoriteCount}</span></button></div>
+      {favoriteRow}
       <button className="buy-button" type="button" onClick={purchase} disabled={purchasePending || !available || shirt.isOwner}>{purchaseLabel} <span>{available && !shirt.isOwner ? '→' : '—'}</span></button>
       <p className="purchase-note">Ownership transfers immediately. No returns. There is only one.</p>
       <div className={`mutation-status ${error ? 'is-error' : ''}`} role="status" aria-live="polite">{error || status}</div>

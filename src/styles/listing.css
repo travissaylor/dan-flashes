@@ -1,0 +1,12 @@
+.relist-form { margin-top:20px; padding:22px 20px; display:grid; gap:12px; background:#202c27; border:1px solid var(--line); }
+.relist-copy { margin:0; color:var(--paper); font:400 20px 'DM Serif Display',serif; }
+.relist-form label { display:grid; gap:5px; min-width:0; }
+.relist-form label span { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
+.relist-form input { width:100%; min-width:0; background:transparent; color:var(--paper); border:1px solid #f1eddf77; padding:9px; }
+.relist-form small { color:var(--acid); line-height:1.25; }
+.relist-form button { min-height:44px; border:0; background:var(--acid); color:var(--ink); padding:10px 16px; text-transform:uppercase; letter-spacing:.1em; font-weight:700; display:flex; gap:20px; justify-content:space-between; align-items:center; transition:background .2s; }
+.relist-form button:hover:not(:disabled) { background:var(--orange); }
+.relist-form button:disabled { opacity:.6; cursor:not-allowed; }
+.relist-form .mutation-status { color:var(--paper); }
+.relist-form .mutation-status.is-error { color:#ff9b86; }
+.buy-button:disabled { background:var(--line); color:var(--muted); cursor:not-allowed; }

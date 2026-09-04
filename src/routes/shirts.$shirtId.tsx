@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { ShirtArtwork } from '@/components/ShirtArtwork'
 import { ListingActions } from '@/components/ListingActions'
+import { RelistPanel } from '@/components/RelistPanel'
 import { BASE_PRICE, formatBones, getComplexity } from '@/lib/complexity'
 import { getAccountState, getListingDetail } from '@/server/marketplace.functions'
 
@@ -53,13 +54,14 @@ function ShirtDetail() {
   const complexity = getComplexity(shirt.layers)
   return (
     <main className="detail-page">
-      <div className="detail-art"><span className="one-of-one">{shirt.availability === 'sold' ? 'Acquired. Permanently.' : shirt.availability === 'development' ? 'Development collection.' : 'One available. Ever.'}</span><ShirtArtwork layers={shirt.layers} title={shirt.name}/></div>
+      <div className="detail-art"><span className="one-of-one">{shirt.availability === 'sold' ? 'Acquired. Permanently.' : shirt.availability === 'development' ? 'Development collection.' : shirt.availability === 'unlisted' ? 'In a private collection.' : 'One available. Ever.'}</span><ShirtArtwork layers={shirt.layers} title={shirt.name}/></div>
       <section className="detail-copy">
         <p className="eyebrow">Authenticated Dan Flashes original</p>
         <h1>{shirt.name}</h1>
-        <p className="creator">Created by <a href={`/profiles/${shirt.creator}`}>@{shirt.creator}</a> · {shirt.favorites} admirers</p>
+        <p className="creator">Created by <a href={`/profiles/${shirt.creator}`}>@{shirt.creator}</a>{shirt.owner !== shirt.creator ? <> · Owned by <a href={`/profiles/${shirt.owner}`}>@{shirt.owner}</a></> : null} · {shirt.favorites} admirers</p>
         <div className="price-lockup"><strong>{formatBones(shirt.price)}</strong><span>Bones<br/>Buy price</span></div>
         <ListingActions shirt={shirt} account={account}/>
+        {shirt.isOwner && shirt.availability === 'unlisted' && account.mode === 'authenticated' ? <RelistPanel shirt={shirt}/> : null}
         <div className="complexity-receipt">
           <div><h2>Why it costs that</h2><span>Verified calculation</span></div>
           <p><b>{complexity.layers}</b> layers <i>×</i> <b>{complexity.elements}</b> elements <i>×</i> <b>{complexity.colors}</b> colors</p>
