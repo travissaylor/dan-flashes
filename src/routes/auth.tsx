@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
 import { z } from 'zod'
 import { safeReturnPath } from '@/lib/action-contracts'
-import { getAuthAvailability, signIn, signUp } from '@/server/auth.functions'
+import { getAuthAvailability, signIn, signUp, startOAuth } from '@/server/auth.functions'
 
 const searchSchema = z.object({ next: z.string().optional().catch('/') })
 
@@ -12,14 +12,52 @@ export const Route = createFileRoute('/auth')({
   component: AuthPage,
 })
 
+const PROVIDER_NAMES: Record<string, string> = {
+  google: 'Google',
+  github: 'GitHub',
+  apple: 'Apple',
+  discord: 'Discord',
+  twitch: 'Twitch',
+  facebook: 'Facebook',
+  azure: 'Azure',
+  gitlab: 'GitLab',
+  bitbucket: 'Bitbucket',
+  linkedin_oidc: 'LinkedIn',
+  notion: 'Notion',
+  slack_oidc: 'Slack',
+  spotify: 'Spotify',
+  twitter: 'Twitter',
+  zoom: 'Zoom',
+}
+
+function getProviderDisplayName(provider: string) {
+  return PROVIDER_NAMES[provider] ?? (provider.charAt(0).toUpperCase() + provider.slice(1))
+}
+
 function AuthPage() {
-  const { configured } = Route.useLoaderData()
+  const { configured, providers } = Route.useLoaderData()
   const { next } = Route.useSearch()
   const returnPath = safeReturnPath(next)
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  async function handleOAuth(provider: string) {
+    if (pending || !configured) return
+    setPending(true)
+    setError('')
+    setSuccess('')
+    try {
+      const result = await startOAuth({ data: { provider, next: returnPath } })
+      if (!result.ok) return setError(result.error.message)
+      window.location.assign(result.data.url)
+    } catch {
+      setError('Authentication did not settle. Your entries remain in place.')
+    } finally {
+      setPending(false)
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -66,12 +104,33 @@ function AuthPage() {
         </div>
         <h2 id="auth-title">{mode === 'signin' ? 'Return to the floor.' : 'Enter the pattern economy.'}</h2>
         {!configured ? <div className="form-notice">Authentication is intentionally unavailable in the development catalog. Configure Supabase to open accounts.</div> : (
-          <form onSubmit={submit}>
-            {mode === 'signup' && <label><span>Public username</span><input name="username" required minLength={3} maxLength={15} pattern="[A-Za-z0-9_]+" autoComplete="username" aria-describedby="username-hint"/><small id="username-hint">3–15 letters, numbers, or underscores. A short account mark is added for uniqueness.</small></label>}
-            <label><span>Email</span><input name="email" type="email" required maxLength={254} autoComplete="email"/></label>
-            <label><span>Password</span><input name="password" type="password" required minLength={8} maxLength={128} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}/></label>
-            <button className="auth-submit" type="submit" disabled={pending}>{pending ? 'Authenticating…' : mode === 'signin' ? 'Sign in' : 'Create account'} <span>→</span></button>
-          </form>
+          <>
+            <form onSubmit={submit}>
+              {mode === 'signup' && <label><span>Public username</span><input name="username" required minLength={3} maxLength={15} pattern="[A-Za-z0-9_]+" autoComplete="username" aria-describedby="username-hint"/><small id="username-hint">3–15 letters, numbers, or underscores. A short account mark is added for uniqueness.</small></label>}
+              <label><span>Email</span><input name="email" type="email" required maxLength={254} autoComplete="email"/></label>
+              <label><span>Password</span><input name="password" type="password" required minLength={8} maxLength={128} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}/></label>
+              <button className="auth-submit" type="submit" disabled={pending}>{pending ? 'Authenticating…' : mode === 'signin' ? 'Sign in' : 'Create account'} <span>→</span></button>
+            </form>
+            {providers && providers.length > 0 && (
+              <div className="auth-social">
+                <div className="auth-divider"><span>Or be recognised by an institution</span></div>
+                <div className="auth-social-buttons">
+                  {providers.map((provider) => (
+                    <button
+                      key={provider}
+                      type="button"
+                      className="auth-social-button"
+                      disabled={pending}
+                      onClick={() => handleOAuth(provider)}
+                    >
+                      <span>Continue with {getProviderDisplayName(provider)}</span>
+                      <span>→</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
         <div className={`form-status ${error ? 'is-error' : ''}`} role="status" aria-live="polite">{error || success}</div>
         <p className="auth-fineprint">Email verification is not ceremonial. The signup allowance is issued only after confirmation.</p>

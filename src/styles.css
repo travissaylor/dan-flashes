@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
+@import './styles/designer.css';
+@import './styles/auth.css';
 
 :root { --paper:#f1eddf; --ink:#15201c; --acid:#d8ff36; --orange:#dc4c2f; --muted:#6d7168; --line:color-mix(in oklch, var(--ink) 24%, transparent); font-family:'Archivo Narrow', sans-serif; color:var(--ink); background:var(--paper); font-synthesis:none; }
 * { box-sizing:border-box; }
