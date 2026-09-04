@@ -63,6 +63,25 @@ listing, purchasing, daily claims, and favorites use authenticated RPCs. Every
 economy RPC validates `auth.uid()` itself, and fee/reward/purchase operations
 lock affected rows and accept UUID idempotency keys.
 
-PNG thumbnail/OG generation remains intentionally out of scope. The structured
-pattern JSON in `patterns.definition` is the source of truth; a later media
-service can consume that value after commit and store only derived render URLs.
+Listings can be withdrawn with the `cancel_listing` RPC (seller only, active
+listings only, the listing fee is not refunded). Public reads for profiles,
+the leaderboard, and shirt collections go through the `profile_summaries`,
+`leaderboard_sales`, and `shirt_collection` views, which run with
+`security_invoker` so row-level security still applies. Saved shirts and
+patterns are publicly readable; wallets, rewards, and the ledger stay private.
+
+## Social sign-in
+
+Set `AUTH_OAUTH_PROVIDERS` to a comma-separated list of Supabase provider ids
+(for example `google,github`) to show social sign-in buttons. Each provider
+must also be enabled in Authentication → Providers with its own credentials,
+and the `/auth/callback` URL must be in the redirect allow list. OAuth users
+arrive with a confirmed email, so the signup Bones are issued immediately.
+
+## Share images
+
+Share images are rendered on demand at `/shirts/<id>/image.png` with resvg and
+served with an immutable one-year cache header, which the CDN honours. Nothing
+is written to Supabase Storage; the structured pattern JSON in
+`patterns.definition` is the source of truth, and patterns are immutable, so
+the rendered image for an id never changes.

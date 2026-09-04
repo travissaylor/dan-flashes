@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DesignerRouteImport } from './routes/designer'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShirtsShirtIdRouteImport } from './routes/shirts.$shirtId'
+import { Route as ProfilesUsernameRouteImport } from './routes/profiles.$username'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ShirtsShirtIdImageDotpngRouteImport } from './routes/shirts.$shirtId_.image[.]png'
 
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DesignerRoute = DesignerRouteImport.update({
   id: '/designer',
   path: '/designer',
@@ -36,6 +43,11 @@ const ShirtsShirtIdRoute = ShirtsShirtIdRouteImport.update({
   path: '/shirts/$shirtId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfilesUsernameRoute = ProfilesUsernameRouteImport.update({
+  id: '/profiles/$username',
+  path: '/profiles/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -52,7 +64,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/designer': typeof DesignerRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/profiles/$username': typeof ProfilesUsernameRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
   '/shirts/$shirtId/image.png': typeof ShirtsShirtIdImageDotpngRoute
 }
@@ -60,7 +74,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/designer': typeof DesignerRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/profiles/$username': typeof ProfilesUsernameRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
   '/shirts/$shirtId/image.png': typeof ShirtsShirtIdImageDotpngRoute
 }
@@ -69,7 +85,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/designer': typeof DesignerRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/profiles/$username': typeof ProfilesUsernameRoute
   '/shirts/$shirtId': typeof ShirtsShirtIdRoute
   '/shirts/$shirtId_/image.png': typeof ShirtsShirtIdImageDotpngRoute
 }
@@ -79,7 +97,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/designer'
+    | '/leaderboard'
     | '/auth/callback'
+    | '/profiles/$username'
     | '/shirts/$shirtId'
     | '/shirts/$shirtId/image.png'
   fileRoutesByTo: FileRoutesByTo
@@ -87,7 +107,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/designer'
+    | '/leaderboard'
     | '/auth/callback'
+    | '/profiles/$username'
     | '/shirts/$shirtId'
     | '/shirts/$shirtId/image.png'
   id:
@@ -95,7 +117,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/designer'
+    | '/leaderboard'
     | '/auth/callback'
+    | '/profiles/$username'
     | '/shirts/$shirtId'
     | '/shirts/$shirtId_/image.png'
   fileRoutesById: FileRoutesById
@@ -104,12 +128,21 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   DesignerRoute: typeof DesignerRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  ProfilesUsernameRoute: typeof ProfilesUsernameRoute
   ShirtsShirtIdRoute: typeof ShirtsShirtIdRoute
   ShirtsShirtIdImageDotpngRoute: typeof ShirtsShirtIdImageDotpngRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/designer': {
       id: '/designer'
       path: '/designer'
@@ -136,6 +169,13 @@ declare module '@tanstack/react-router' {
       path: '/shirts/$shirtId'
       fullPath: '/shirts/$shirtId'
       preLoaderRoute: typeof ShirtsShirtIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profiles/$username': {
+      id: '/profiles/$username'
+      path: '/profiles/$username'
+      fullPath: '/profiles/$username'
+      preLoaderRoute: typeof ProfilesUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -169,6 +209,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   DesignerRoute: DesignerRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  ProfilesUsernameRoute: ProfilesUsernameRoute,
   ShirtsShirtIdRoute: ShirtsShirtIdRoute,
   ShirtsShirtIdImageDotpngRoute: ShirtsShirtIdImageDotpngRoute,
 }
