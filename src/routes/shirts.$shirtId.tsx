@@ -32,7 +32,7 @@ export const Route = createFileRoute('/shirts/$shirtId')({
     const complexity = getComplexity(shirt.layers)
     const price = describeShirtPrice(shirt)
     const title = `${shirt.name} · Dan Flashes`
-    const description = `By @${shirt.creator} · ${formatBones(price.amount)} Bones${price.purchasable ? '' : ' minimum'} · ${complexity.layers} layers × ${complexity.elements} elements × ${complexity.colors} colors.`
+    const description = `By @${shirt.creator} · ${formatBones(price.amount)} Bones${price.label === 'Minimum value' ? ' minimum' : ''} · ${complexity.layers} layers × ${complexity.elements} elements × ${complexity.colors} colors.`
     return {
       meta: [
         { title },
