@@ -1,0 +1,5 @@
+.add-pattern-groups { display:grid !important; gap:14px !important; }
+.add-pattern-group { display:grid !important; gap:7px !important; }
+.add-pattern-group > b { color:var(--muted); font-size:9px; font-weight:400; letter-spacing:.13em; text-transform:uppercase; }
+.add-pattern-group > div { display:flex; flex-wrap:wrap; gap:6px; }
+.add-pattern button:disabled { cursor:not-allowed; opacity:.35; }
