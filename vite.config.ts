@@ -6,5 +6,7 @@ import netlify from '@netlify/vite-plugin-tanstack-start'
 export default defineConfig({
   server: { port: 3000 },
   resolve: { tsconfigPaths: true },
-  plugins: [tanstackStart(), viteReact(), netlify()],
+  plugins: [tanstackStart(), viteReact(), netlify({ dev: { edgeFunctions: { enabled: false } } })],
+  optimizeDeps: { exclude: ['@resvg/resvg-js'] },
+  ssr: { external: ['@resvg/resvg-js'] },
 })
