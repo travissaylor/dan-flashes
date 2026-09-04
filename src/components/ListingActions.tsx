@@ -84,10 +84,19 @@ export function ListingActions({ shirt, account }: { shirt: Shirt; account: Acco
   ) : null
 
   if (!authenticated) {
-    if (shirt.availability !== 'available') {
+    if (shirt.availability === 'development') {
       return (
         <div className="listing-actions">
-          <button className="buy-button" type="button" disabled>{shirt.availability === 'unlisted' ? 'In a private collection' : 'No longer available'} <span>—</span></button>
+          <button className="buy-button" type="button" disabled>Transactions require Supabase <span>—</span></button>
+          <p className="purchase-note">The development catalog is public and read-only.</p>
+        </div>
+      )
+    }
+    if (shirt.availability === 'unlisted') {
+      return (
+        <div className="listing-actions">
+          <button className="buy-button" type="button" disabled>In a private collection <span>—</span></button>
+          <p className="purchase-note">This shirt is not currently on the floor.</p>
         </div>
       )
     }
