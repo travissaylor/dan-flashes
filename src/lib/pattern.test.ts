@@ -1,6 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import { getPurchaseDistribution } from './economy'
-import { validatePatternAndGetComplexity } from './pattern'
+import { patternElementCategories, patternElements } from './pattern-elements'
+import { patternDefinitionSchema, validatePatternAndGetComplexity } from './pattern'
+
+describe('pattern element catalogue', () => {
+  it('contains 18 elements partitioned into geometric and textile categories', () => {
+    const categorized = [...patternElementCategories.geometric, ...patternElementCategories.textile]
+
+    expect(patternElements).toHaveLength(18)
+    expect(patternElementCategories.geometric).toHaveLength(12)
+    expect(patternElementCategories.textile).toHaveLength(6)
+    expect(categorized).toEqual([...patternElements])
+    expect(new Set(categorized).size).toBe(categorized.length)
+  })
+
+  it.each(patternElements)('accepts a %s layer', (element) => {
+    expect(patternDefinitionSchema.safeParse({ layers: [{ element, colors: ['#ffffff', '#000000'], scale: 1, rotation: 0 }] }).success).toBe(true)
+  })
+})
 
 describe('pattern validation and complexity', () => {
   it('normalizes colors and calculates the authoritative floor', () => {

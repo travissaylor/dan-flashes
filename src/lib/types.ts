@@ -1,12 +1,6 @@
-export type PatternElement =
-  | 'houndstooth'
-  | 'paisley'
-  | 'diamond'
-  | 'chevron'
-  | 'plaid'
-  | 'grid'
-  | 'zigzag'
-  | 'stripe'
+import type { PatternElement } from './pattern-elements'
+
+export type { PatternElement }
 
 export type PatternLayer = {
   element: PatternElement
@@ -21,14 +15,43 @@ export type Shirt = {
   listingId: string | null
   name: string
   creator: string
-  price: number
+  owner: string
+  /** The active listing price, or null when the shirt is not on the floor. */
+  price: number | null
+  priceFloor: number
+  complexityScore: number
   favorites: number
   isFavorited: boolean
   isOwner: boolean
-  availability: 'available' | 'sold' | 'development'
+  availability: 'available' | 'unlisted' | 'development'
   listed: string
-  status?: 'listed' | 'sold'
   layers: PatternLayer[]
+}
+
+export type LeaderboardEntry = {
+  rank: number
+  listingId: string
+  shirtId: string
+  name: string
+  layers: PatternLayer[]
+  price: number
+  soldAt: string
+  seller: string
+  buyer: string
+  complexityScore: number
+  layerCount: number
+  elementCount: number
+  colorCount: number
+}
+
+export type Profile = {
+  username: string
+  joinedAt: string
+  shirtsOwned: number
+  shirtsCreated: number
+  salesCount: number
+  owned: Shirt[]
+  created: Shirt[]
 }
 
 export type AccountState =

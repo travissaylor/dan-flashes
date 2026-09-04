@@ -1,14 +1,52 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
 import { ShirtArtwork } from '@/components/ShirtArtwork'
 import { ListingActions } from '@/components/ListingActions'
+import { RelistPanel } from '@/components/RelistPanel'
 import { BASE_PRICE, formatBones, getComplexity } from '@/lib/complexity'
+import { describeShirtPrice } from '@/lib/pricing'
 import { getAccountState, getListingDetail } from '@/server/marketplace.functions'
+
+// The request origin is only available on the server. Client-side navigations
+// fall back to a relative image path instead of round-tripping for it.
+const getRequestOrigin = createServerFn({ method: 'GET' }).handler(() => {
+  try {
+    return new URL(getRequest().url).origin
+  } catch {
+    return null
+  }
+})
 
 export const Route = createFileRoute('/shirts/$shirtId')({
   loader: async ({ params }) => {
     const [shirt, account] = await Promise.all([getListingDetail({ data: { shirtId: params.shirtId } }), getAccountState()])
     if (!shirt) throw notFound()
-    return { shirt, account }
+    const imagePath = `/shirts/${shirt.id}/image.png`
+    const origin = typeof document === 'undefined' ? await getRequestOrigin() : null
+    return { shirt, account, ogImageUrl: origin ? `${origin}${imagePath}` : imagePath }
+  },
+  head: ({ loaderData }) => {
+    if (!loaderData) return {}
+    const { shirt, ogImageUrl } = loaderData
+    const complexity = getComplexity(shirt.layers)
+    const price = describeShirtPrice(shirt)
+    const title = `${shirt.name} · Dan Flashes`
+    const description = `By @${shirt.creator} · ${formatBones(price.amount)} Bones${price.label === 'Minimum value' ? ' minimum' : ''} · ${complexity.layers} layers × ${complexity.elements} elements × ${complexity.colors} colors.`
+    return {
+      meta: [
+        { title },
+        { name: 'description', content: description },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:image', content: ogImageUrl },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:image', content: ogImageUrl },
+      ],
+    }
   },
   component: ShirtDetail,
 })
@@ -16,15 +54,17 @@ export const Route = createFileRoute('/shirts/$shirtId')({
 function ShirtDetail() {
   const { shirt, account } = Route.useLoaderData()
   const complexity = getComplexity(shirt.layers)
+  const price = describeShirtPrice(shirt)
   return (
     <main className="detail-page">
-      <div className="detail-art"><span className="one-of-one">{shirt.availability === 'sold' ? 'Acquired. Permanently.' : shirt.availability === 'development' ? 'Development collection.' : 'One available. Ever.'}</span><ShirtArtwork layers={shirt.layers} title={shirt.name}/></div>
+      <div className="detail-art"><span className="one-of-one">{shirt.availability === 'development' ? 'Development collection.' : shirt.availability === 'unlisted' ? 'In a private collection.' : 'One available. Ever.'}</span><ShirtArtwork layers={shirt.layers} title={shirt.name}/></div>
       <section className="detail-copy">
         <p className="eyebrow">Authenticated Dan Flashes original</p>
         <h1>{shirt.name}</h1>
-        <p className="creator">Created by <a href="#creator">@{shirt.creator}</a> · {shirt.favorites} admirers</p>
-        <div className="price-lockup"><strong>{formatBones(shirt.price)}</strong><span>Bones<br/>Buy price</span></div>
+        <p className="creator">Created by <a href={`/profiles/${shirt.creator}`}>@{shirt.creator}</a>{shirt.owner !== shirt.creator ? <> · Owned by <a href={`/profiles/${shirt.owner}`}>@{shirt.owner}</a></> : null} · {shirt.favorites} admirers</p>
+        <div className="price-lockup"><strong>{formatBones(price.amount)}</strong><span>Bones<br/>{price.label}</span></div>
         <ListingActions shirt={shirt} account={account}/>
+        {shirt.isOwner && shirt.availability === 'unlisted' && account.mode === 'authenticated' ? <RelistPanel shirt={shirt}/> : null}
         <div className="complexity-receipt">
           <div><h2>Why it costs that</h2><span>Verified calculation</span></div>
           <p><b>{complexity.layers}</b> layers <i>×</i> <b>{complexity.elements}</b> elements <i>×</i> <b>{complexity.colors}</b> colors</p>

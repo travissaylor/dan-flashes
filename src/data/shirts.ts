@@ -1,16 +1,23 @@
-import type { Shirt } from '@/lib/types'
+import { getComplexity } from '@/lib/complexity'
+import type { PatternLayer, Shirt } from '@/lib/types'
 
-export const shirts: Shirt[] = [
+type CatalogueEntry = {
+  id: string
+  name: string
+  creator: string
+  price: number
+  favorites: number
+  listed: string
+  layers: PatternLayer[]
+}
+
+const catalogue: CatalogueEntry[] = [
   {
     id: 'dangerous-nights',
-    listingId: null,
     name: 'Dangerous Nights',
     creator: 'doug_from_work',
     price: 9400,
     favorites: 182,
-    isFavorited: false,
-    isOwner: false,
-    availability: 'development',
     listed: '12 min ago',
     layers: [
       { element: 'houndstooth', colors: ['#f4e7c4', '#17231f'], scale: 0.82, rotation: 8 },
@@ -20,14 +27,10 @@ export const shirts: Shirt[] = [
   },
   {
     id: 'the-business-lunch',
-    listingId: null,
     name: 'The Business Lunch',
     creator: 'slicked_back',
     price: 6200,
     favorites: 96,
-    isFavorited: false,
-    isOwner: false,
-    availability: 'development',
     listed: '38 min ago',
     layers: [
       { element: 'plaid', colors: ['#e6c86a', '#59291f'], scale: 1.1, rotation: 0 },
@@ -36,14 +39,10 @@ export const shirts: Shirt[] = [
   },
   {
     id: 'complication-no-7',
-    listingId: null,
     name: 'Complication No. 7',
     creator: 'pattern_guy',
     price: 12800,
     favorites: 311,
-    isFavorited: false,
-    isOwner: false,
-    availability: 'development',
     listed: '1 hr ago',
     layers: [
       { element: 'chevron', colors: ['#ef5b38', '#1c2a55'], scale: 0.65, rotation: 0 },
@@ -54,14 +53,10 @@ export const shirts: Shirt[] = [
   },
   {
     id: 'quiet-power',
-    listingId: null,
     name: 'Quiet Power',
     creator: 'calico_cut',
     price: 3600,
     favorites: 44,
-    isFavorited: false,
-    isOwner: false,
-    availability: 'development',
     listed: '2 hrs ago',
     layers: [
       { element: 'grid', colors: ['#d7ded0', '#243e3a'], scale: 1.3, rotation: 2 },
@@ -70,14 +65,10 @@ export const shirts: Shirt[] = [
   },
   {
     id: 'paid-in-bones',
-    listingId: null,
     name: 'Paid in Bones',
     creator: 'big_wet',
     price: 7900,
     favorites: 127,
-    isFavorited: false,
-    isOwner: false,
-    availability: 'development',
     listed: 'Yesterday',
     layers: [
       { element: 'paisley', colors: ['#171c35', '#e35e3f'], scale: 0.7, rotation: 0 },
@@ -87,14 +78,10 @@ export const shirts: Shirt[] = [
   },
   {
     id: 'friday-4-45',
-    listingId: null,
     name: 'Friday, 4:45',
     creator: 'stanzo_fedora',
     price: 5100,
     favorites: 73,
-    isFavorited: false,
-    isOwner: false,
-    availability: 'development',
     listed: 'Yesterday',
     layers: [
       { element: 'zigzag', colors: ['#f0dfbd', '#5b302a'], scale: 0.8, rotation: 10 },
@@ -102,3 +89,25 @@ export const shirts: Shirt[] = [
     ],
   },
 ]
+
+function toCatalogueShirt(entry: CatalogueEntry): Shirt {
+  const complexity = getComplexity(entry.layers)
+  return {
+    id: entry.id,
+    listingId: null,
+    name: entry.name,
+    creator: entry.creator,
+    owner: entry.creator,
+    price: entry.price,
+    priceFloor: complexity.floor,
+    complexityScore: complexity.score,
+    favorites: entry.favorites,
+    isFavorited: false,
+    isOwner: false,
+    availability: 'development',
+    listed: entry.listed,
+    layers: entry.layers,
+  }
+}
+
+export const shirts: Shirt[] = catalogue.map(toCatalogueShirt)

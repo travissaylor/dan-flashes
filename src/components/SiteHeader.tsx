@@ -61,11 +61,11 @@ export function SiteHeader({ account: initialAccount }: { account: AccountState 
         <nav aria-label="Main navigation">
           <Link to="/" activeOptions={{ exact: true }}>Marketplace</Link>
           <Link to="/designer">Design a shirt</Link>
-          <a href="#leaderboard">Leaderboard</a>
+          <a href="/leaderboard">Leaderboard</a>
         </nav>
         {account.mode === 'development' && <div className="account-cluster"><span className="guest-state">Guest preview</span></div>}
         {account.mode === 'guest' && <div className="account-cluster"><Link className="account-link" to="/auth" search={{ next: '/' }}>Sign in</Link></div>}
-        {account.mode === 'authenticated' && <div className="account-cluster"><span className="bones-balance"><i /> {account.balance.toLocaleString()} <small>Bones</small></span><span className="account-name">@{account.username}</span><button className="avatar" type="button" onClick={leave} disabled={signOutPending} aria-label={`Sign out ${account.username}`} title="Sign out">{signOutPending ? '…' : account.initials}</button></div>}
+        {account.mode === 'authenticated' && <div className="account-cluster"><span className="bones-balance"><i /> {account.balance.toLocaleString()} <small>Bones</small></span><a className="account-name" href={`/profiles/${account.username}`}>@{account.username}</a><button className="avatar" type="button" onClick={leave} disabled={signOutPending} aria-label={`Sign out ${account.username}`} title="Sign out">{signOutPending ? '…' : account.initials}</button></div>}
       </header>
     </>
   )

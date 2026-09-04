@@ -16,8 +16,13 @@ export const createListingInputSchema = z.object({
 }).strict()
 
 export const purchaseListingInputSchema = z.object({ listingId: uuidSchema, idempotencyKey: uuidSchema }).strict()
+export const cancelListingInputSchema = z.object({ listingId: uuidSchema }).strict()
 export const favoriteInputSchema = z.object({ listingId: uuidSchema, favorite: z.boolean() }).strict()
 export const dailyRewardInputSchema = z.object({ idempotencyKey: uuidSchema }).strict()
+
+export const profileLookupSchema = z.object({
+  username: z.string().trim().min(3).max(24).regex(/^[a-zA-Z0-9_]+$/),
+}).strict()
 
 export const authInputSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -37,6 +42,7 @@ export type ActionErrorCode =
   | 'INSUFFICIENT_LISTING_FEE'
   | 'LISTING_UNAVAILABLE'
   | 'OWN_LISTING'
+  | 'NOT_LISTING_SELLER'
   | 'PRICE_BELOW_FLOOR'
   | 'INVALID_CREDENTIALS'
   | 'VALIDATION_ERROR'
@@ -65,7 +71,10 @@ export function mapActionError(error: unknown): ActionError {
   if (message.includes('insufficient bones')) {
     return { code: 'INSUFFICIENT_BALANCE', message: 'Your wallet cannot support this level of complication.', retryable: false }
   }
-  if (message.includes('no longer available') || message.includes('ownership is stale') || message.includes('listing not found')) {
+  if (message.includes('only the seller may cancel')) {
+    return { code: 'NOT_LISTING_SELLER', message: 'Only the seller may withdraw this listing.', retryable: false }
+  }
+  if (message.includes('no longer available') || message.includes('no longer active') || message.includes('ownership is stale') || message.includes('listing not found')) {
     return { code: 'LISTING_UNAVAILABLE', message: 'This listing is no longer available. The floor moved first.', retryable: false }
   }
   if (message.includes('already own this shirt') || message.includes('only the owner may')) {

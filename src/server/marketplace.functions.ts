@@ -3,9 +3,11 @@ import { setResponseHeaders } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { getMarketplaceRepository } from '@/data/repository.server'
 import {
-  createListingInputSchema, createShirtInputSchema, dailyRewardInputSchema, favoriteInputSchema,
-  mapActionError, purchaseListingInputSchema, type ActionResult,
+  cancelListingInputSchema, createListingInputSchema, createShirtInputSchema, dailyRewardInputSchema,
+  favoriteInputSchema, mapActionError, profileLookupSchema, purchaseListingInputSchema, type ActionResult,
 } from '@/lib/action-contracts'
+
+const LEADERBOARD_LIMIT = 25
 
 function markViewerDataPrivate() {
   setResponseHeaders(new Headers({ 'Cache-Control': 'private, no-store', Vary: 'Cookie, Authorization' }))
@@ -28,6 +30,18 @@ export const getListingDetail = createServerFn({ method: 'GET' })
     return getMarketplaceRepository().getListingDetail(data.shirtId)
   })
 
+export const getProfile = createServerFn({ method: 'GET' })
+  .validator(profileLookupSchema)
+  .handler(async ({ data }) => {
+    markViewerDataPrivate()
+    return getMarketplaceRepository().getProfile(data.username)
+  })
+
+export const getLeaderboard = createServerFn({ method: 'GET' }).handler(async () => {
+  markViewerDataPrivate()
+  return getMarketplaceRepository().getLeaderboard(LEADERBOARD_LIMIT)
+})
+
 export const createShirt = createServerFn({ method: 'POST' })
   .validator(createShirtInputSchema)
   .handler(async ({ data }): Promise<ActionResult<{ shirtId: string }>> => {
@@ -47,6 +61,13 @@ export const purchaseListing = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     try { return { ok: true as const, data: await getMarketplaceRepository().purchaseListing(data) } }
     catch (error) { return { ok: false as const, error: mapActionError(error) } }
+  })
+
+export const cancelListing = createServerFn({ method: 'POST' })
+  .validator(cancelListingInputSchema)
+  .handler(async ({ data }): Promise<ActionResult<{ listingId: string }>> => {
+    try { return { ok: true, data: await getMarketplaceRepository().cancelListing(data) } }
+    catch (error) { return { ok: false, error: mapActionError(error) } }
   })
 
 export const setListingFavorite = createServerFn({ method: 'POST' })

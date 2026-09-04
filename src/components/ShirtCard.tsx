@@ -1,10 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { getComplexity, formatBones } from '@/lib/complexity'
+import { describeShirtPrice } from '@/lib/pricing'
 import type { Shirt } from '@/lib/types'
 import { ShirtArtwork } from './ShirtArtwork'
 
 export function ShirtCard({ shirt, index }: { shirt: Shirt; index: number }) {
   const complexity = getComplexity(shirt.layers)
+  const price = describeShirtPrice(shirt)
   return (
     <article className="shirt-card" style={{ '--delay': `${index * 70}ms` } as React.CSSProperties}>
       <Link to="/shirts/$shirtId" params={{ shirtId: shirt.id }} className="shirt-image-wrap">
@@ -17,7 +19,7 @@ export function ShirtCard({ shirt, index }: { shirt: Shirt; index: number }) {
           <h3><Link to="/shirts/$shirtId" params={{ shirtId: shirt.id }}>{shirt.name}</Link></h3>
           <p>By @{shirt.creator} · {shirt.listed}</p>
         </div>
-        <strong>{formatBones(shirt.price)} <small>B</small></strong>
+        <strong>{formatBones(price.amount)} <small>{price.label === 'Minimum value' ? 'B min.' : 'B'}</small></strong>
       </div>
       <div className="complexity-line"><span>Complexity {complexity.score}</span><span>{shirt.favorites} ♥</span></div>
     </article>
