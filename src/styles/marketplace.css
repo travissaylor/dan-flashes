@@ -1,0 +1,28 @@
+.market .filter-drawer.is-open { max-height:460px; }
+.pattern-filters { min-width:0; }
+.filter-pills-all { margin-bottom:18px; }
+.filter-pill-groups { display:grid; gap:16px; }
+.filter-pill-group > span { color:var(--muted); margin-bottom:8px; }
+.filter-pill-group .filter-pills { align-items:flex-start; }
+.price-filter { min-width:0; }
+.price-sliders { display:grid; gap:11px; margin:19px 0 24px; }
+.price-sliders label { display:grid; grid-template-columns:62px 1fr; align-items:center; gap:10px; }
+.price-sliders label > span { margin:0; }
+.price-inputs { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.price-inputs label { min-width:0; }
+.price-inputs label > span { color:var(--muted); margin-bottom:7px; }
+.price-inputs input { border:1px solid var(--ink); background:transparent; padding:9px 10px; }
+.leaderboard { transition:color .2s ease; }
+.market-leaderboard-link:hover > .leaderboard { color:var(--acid); }
+.market-leaderboard-link:focus-visible > .leaderboard { outline:3px solid var(--orange); outline-offset:-3px; }
+
+@media (max-width:900px) {
+  .market .filter-drawer { grid-template-columns:1.6fr 1fr; gap:35px; }
+  .market .filter-drawer.is-open { max-height:590px; }
+}
+
+@media (max-width:600px) {
+  .market .filter-drawer.is-open { max-height:920px; }
+  .filter-pills-all { margin-bottom:20px; }
+  .filter-pill-groups { gap:20px; }
+}
