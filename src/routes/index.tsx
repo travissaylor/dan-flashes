@@ -36,7 +36,7 @@ function Marketplace() {
   const selectedElements = useMemo(() => [...new Set(search.elements ?? [])], [search.elements])
   const [priceFloor, priceCeiling] = useMemo(() => {
     if (!shirts.length) return [0, 0]
-    const prices = shirts.map((shirt) => shirt.price)
+    const prices = shirts.map((shirt) => shirt.price ?? shirt.priceFloor)
     return [Math.floor(Math.min(...prices) / PRICE_STEP) * PRICE_STEP, Math.ceil(Math.max(...prices) / PRICE_STEP) * PRICE_STEP]
   }, [shirts])
   const requestedMin = clamp(search.min ?? priceFloor, priceFloor, priceCeiling)
@@ -45,8 +45,8 @@ function Marketplace() {
   const maxPrice = Math.max(requestedMin, requestedMax)
   const leader = leaderboard[0]
   const visible = useMemo(() => shirts.filter((shirt) => (
-    shirt.price >= minPrice
-    && shirt.price <= maxPrice
+    (shirt.price ?? shirt.priceFloor) >= minPrice
+    && (shirt.price ?? shirt.priceFloor) <= maxPrice
     && (!selectedElements.length || shirt.layers.some((layer) => selectedElements.includes(layer.element)))
   )), [shirts, selectedElements, minPrice, maxPrice])
 

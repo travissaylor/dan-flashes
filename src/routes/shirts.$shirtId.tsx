@@ -5,6 +5,7 @@ import { ShirtArtwork } from '@/components/ShirtArtwork'
 import { ListingActions } from '@/components/ListingActions'
 import { RelistPanel } from '@/components/RelistPanel'
 import { BASE_PRICE, formatBones, getComplexity } from '@/lib/complexity'
+import { describeShirtPrice } from '@/lib/pricing'
 import { getAccountState, getListingDetail } from '@/server/marketplace.functions'
 
 // The request origin is only available on the server. Client-side navigations
@@ -29,8 +30,9 @@ export const Route = createFileRoute('/shirts/$shirtId')({
     if (!loaderData) return {}
     const { shirt, ogImageUrl } = loaderData
     const complexity = getComplexity(shirt.layers)
+    const price = describeShirtPrice(shirt)
     const title = `${shirt.name} · Dan Flashes`
-    const description = `By @${shirt.creator} · ${formatBones(shirt.price)} Bones · ${complexity.layers} layers × ${complexity.elements} elements × ${complexity.colors} colors.`
+    const description = `By @${shirt.creator} · ${formatBones(price.amount)} Bones${price.purchasable ? '' : ' minimum'} · ${complexity.layers} layers × ${complexity.elements} elements × ${complexity.colors} colors.`
     return {
       meta: [
         { title },
@@ -52,14 +54,15 @@ export const Route = createFileRoute('/shirts/$shirtId')({
 function ShirtDetail() {
   const { shirt, account } = Route.useLoaderData()
   const complexity = getComplexity(shirt.layers)
+  const price = describeShirtPrice(shirt)
   return (
     <main className="detail-page">
-      <div className="detail-art"><span className="one-of-one">{shirt.availability === 'sold' ? 'Acquired. Permanently.' : shirt.availability === 'development' ? 'Development collection.' : shirt.availability === 'unlisted' ? 'In a private collection.' : 'One available. Ever.'}</span><ShirtArtwork layers={shirt.layers} title={shirt.name}/></div>
+      <div className="detail-art"><span className="one-of-one">{shirt.availability === 'development' ? 'Development collection.' : shirt.availability === 'unlisted' ? 'In a private collection.' : 'One available. Ever.'}</span><ShirtArtwork layers={shirt.layers} title={shirt.name}/></div>
       <section className="detail-copy">
         <p className="eyebrow">Authenticated Dan Flashes original</p>
         <h1>{shirt.name}</h1>
         <p className="creator">Created by <a href={`/profiles/${shirt.creator}`}>@{shirt.creator}</a>{shirt.owner !== shirt.creator ? <> · Owned by <a href={`/profiles/${shirt.owner}`}>@{shirt.owner}</a></> : null} · {shirt.favorites} admirers</p>
-        <div className="price-lockup"><strong>{formatBones(shirt.price)}</strong><span>Bones<br/>Buy price</span></div>
+        <div className="price-lockup"><strong>{formatBones(price.amount)}</strong><span>Bones<br/>{price.label}</span></div>
         <ListingActions shirt={shirt} account={account}/>
         {shirt.isOwner && shirt.availability === 'unlisted' && account.mode === 'authenticated' ? <RelistPanel shirt={shirt}/> : null}
         <div className="complexity-receipt">

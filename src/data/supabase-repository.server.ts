@@ -86,7 +86,7 @@ function toShirt(input: unknown, viewer?: ViewerContext): Shirt {
     name: row.name,
     creator: row.creator_username,
     owner: row.owner_username,
-    price: row.active_price ?? row.price_floor,
+    price: row.active_price,
     priceFloor: row.price_floor,
     complexityScore: row.complexity_score,
     favorites: row.favorite_count,

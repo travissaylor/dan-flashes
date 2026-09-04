@@ -16,13 +16,14 @@ export type Shirt = {
   name: string
   creator: string
   owner: string
-  price: number
+  /** The active listing price, or null when the shirt is not on the floor. */
+  price: number | null
   priceFloor: number
   complexityScore: number
   favorites: number
   isFavorited: boolean
   isOwner: boolean
-  availability: 'available' | 'sold' | 'unlisted' | 'development'
+  availability: 'available' | 'unlisted' | 'development'
   listed: string
   layers: PatternLayer[]
 }

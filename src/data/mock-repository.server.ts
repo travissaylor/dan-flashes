@@ -19,7 +19,7 @@ const SETTLED_SALES = [
 
 function settledSales(): LeaderboardEntry[] {
   return [...shirts]
-    .sort((a, b) => b.complexityScore - a.complexityScore || b.price - a.price || a.id.localeCompare(b.id))
+    .sort((a, b) => b.complexityScore - a.complexityScore || (b.price ?? b.priceFloor) - (a.price ?? a.priceFloor) || a.id.localeCompare(b.id))
     .slice(0, SETTLED_SALES.length)
     .map((shirt, index) => ({
       rank: index + 1,
@@ -27,7 +27,7 @@ function settledSales(): LeaderboardEntry[] {
       shirtId: shirt.id,
       name: shirt.name,
       layers: structuredClone(shirt.layers),
-      price: shirt.price,
+      price: shirt.price ?? shirt.priceFloor,
       soldAt: SETTLED_SALES[index].soldAt,
       seller: shirt.creator,
       buyer: SETTLED_SALES[index].buyer,
