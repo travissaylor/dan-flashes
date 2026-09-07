@@ -20,3 +20,15 @@ port = 54323
 enabled = true
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["http://127.0.0.1:3000/auth/callback", "http://localhost:3000/auth/callback"]
+
+# Hosted project overrides. `supabase config push` applies this block when the
+# linked project ref matches; the base [auth] values above stay local-only.
+[remotes.production]
+project_id = "dxfafxxuhjmpflzjhxqo"
+
+[remotes.production.auth]
+site_url = "https://dan-flashes.netlify.app"
+additional_redirect_urls = [
+  "https://dan-flashes.netlify.app/auth/callback",
+  "https://*--dan-flashes.netlify.app/auth/callback",
+]
